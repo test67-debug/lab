@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>이차함수 그래프 탐구</title>
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --panel:#ffffff;
+    --line:#cfd8e3;
+    --text:#102033;
+    --sub:#47607a;
+    --blue:#1f78ff;
+    --red:#e94b4b;
+    --green:#18a558;
+    --orange:#ff9f1c;
+    --shadow:0 8px 24px rgba(16,32,51,.08);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(180deg,#f7fbff 0%, #eef4fb 100%);
+    color:var(--text);
+    font-family:Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  }
+  .wrap{
+    max-width:1400px;
+    margin:0 auto;
+    padding:18px;
+  }
+  h1{
+    margin:0 0 10px;
+    font-size:clamp(1.8rem, 3vw, 2.8rem);
+    line-height:1.2;
+  }
+  .subtitle{
+    font-size:clamp(1rem, 1.6vw, 1.25rem);
+    color:var(--sub);
+    margin-bottom:16px;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:18px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid #e3eaf3;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+  .controls h2,
+  .info h2{
+    margin:0 0 14px;
+    font-size:clamp(1.2rem, 2vw, 1.6rem);
+  }
+  .control{
+    margin:14px 0 18px;
+    padding:14px;
+    border:1px solid #e7edf5;
+    border-radius:14px;
+    background:#fbfdff;
+  }
+  .control-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .control label{
+    font-size:clamp(1.1rem, 1.6vw, 1.3rem);
+    font-weight:700;
+  }
+  .value-badge{
+    min-width:88px;
+    text-align:center;
+    font-weight:700;
+    font-size:clamp(1rem, 1.5vw, 1.2rem);
+    padding:7px 12px;
+    border-radius:999px;
+    background:#edf4ff;
+    color:#114baf;
+  }
+  input[type="range"]{
+    width:100%;
+    height:42px;
+    accent-color:var(--blue);
+    cursor:pointer;
+  }
+  .range-labels{
+    display:flex;
+    justify-content:space-between;
+    color:var(--sub);
+    font-size:clamp(.9rem,1.2vw,1rem);
+  }
+  .row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  button{
+    border:none;
+    border-radius:12px;
+    padding:14px 18px;
+    font-size:clamp(1rem,1.4vw,1.15rem);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .reset-btn{background:#1f78ff;color:white;}
+  .preset-btn{background:#eef5ff;color:#12469c;border:1px solid #d8e6ff;}
+  .checkboxes{
+    display:grid;
+    gap:10px;
+    margin-top:12px;
+    font-size:clamp(1rem,1.4vw,1.1rem);
+  }
+  .checkboxes label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+  }
+  .checkboxes input{transform:scale(1.4);}
+  .equation{
+    margin-top:14px;
+    padding:16px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#edf5ff,#f8fbff);
+    border:1px solid #dce8fb;
+  }
+  .equation .main{
+    font-size:clamp(1.4rem,2.2vw,2rem);
+    font-weight:800;
+    color:#0f4fbf;
+    word-break:keep-all;
+  }
+  .equation .sub{
+    margin-top:8px;
+    color:var(--sub);
+    font-size:clamp(1rem,1.4vw,1.1rem);
+  }
+  .graph-card{
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    min-height:680px;
+  }
+  .graph-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .legend{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    font-size:clamp(.95rem,1.2vw,1.05rem);
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .swatch{
+    width:18px;height:18px;border-radius:4px;
+  }
+  .canvas-wrap{
+    position:relative;
+    width:100%;
+    height:min(70vh, 760px);
+    min-height:420px;
+    border:1px solid #e3eaf3;
+    border-radius:16px;
+    background:white;
+    overflow:hidden;
+  }
+  canvas{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  .info-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin-top:14px;
+  }
+  .info-box{
+    background:#fbfdff;
+    border:1px solid #e7edf5;
+    border-radius:14px;
+    padding:14px;
+  }
+  .info-title{
+    color:var(--sub);
+    font-size:clamp(.95rem,1.2vw,1rem);
+    margin-bottom:6px;
+  }
+  .info-value{
+    font-size:clamp(1.15rem,1.7vw,1.4rem);
+    font-weight:800;
+  }
+  .concept{
+    margin-top:16px;
+    padding:16px;
+    border-radius:14px;
+    background:#fffaf1;
+    border:1px solid #ffe0a3;
+  }
+  .concept h3{
+    margin:0 0 10px;
+    font-size:clamp(1.1rem,1.7vw,1.35rem);
+    color:#8a5600;
+  }
+  .concept ul{
+    margin:0;
+    padding-left:22px;
+    font-size:clamp(1rem,1.35vw,1.1rem);
+    line-height:1.6;
+  }
+  .footer-note{
+    margin-top:10px;
+    color:var(--sub);
+    font-size:clamp(.95rem,1.2vw,1rem);
+  }
+  @media (max-width: 980px){
+    .layout{grid-template-columns:1fr;}
+    .graph-card{min-height:auto;}
+  }
+  @media (max-width: 640px){
+    .info-grid{grid-template-columns:1fr;}
+    .canvas-wrap{height:56vh; min-height:360px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>이차함수 그래프 탐구</h1>
+  <div class="subtitle">슬라이더로 계수 <strong>a, b, c</strong>를 바꾸며 그래프의 모양과 위치가 어떻게 변하는지 직접 확인해 보세요.</div>
+
+  <div class="layout">
+    <div class="card controls">
+      <h2>조작하기</h2>
+
+      <div class="control">
+        <div class="control-head">
+          <label for="aRange">계수 a</label>
+          <div class="value-badge" id="aValue">1</div>
+        </div>
+        <input id="aRange" type="range" min="-3" max="3" step="0.1" value="1">
+        <div class="range-labels"><span>-3</span><span>0</span><span>3</span></div>
+      </div>
+
+      <div class="control">
+        <div class="control-head">
+          <label for="bRange">계수 b</label>
+          <div class="value-badge" id="bValue">0</div>
+        </div>
+        <input id="bRange" type="range" min="-10" max="10" step="0.5" value="0">
+        <div class="range-labels"><span>-10</span><span>0</span><span>10</span></div>
+      </div>
+
+      <div class="control">
+        <div class="control-head">
+          <label for="cRange">계수 c</label>
+          <div class="value-badge" id="cValue">0</div>
+        </div>
+        <input id="cRange" type="range" min="-10" max="10" step="0.5" value="0">
+        <div class="range-labels"><span>-10</span><span>0</span><span>10</span></div>
+      </div>
+
+      <div class="row">
+        <button class="reset-btn" id="resetBtn">다시 시작</button>
+        <button class="preset-btn" data-a="1" data-b="0" data-c="0">기본형</button>
+        <button class="preset-btn" data-a="-1" data-b="0" data-c="0">아래로 열기</button>
+        <button class="preset-btn" data-a="0.5" data-b="0" data-c="0">넓게</button>
+        <button class="preset-btn" data-a="2" data-b="0" data-c="0">좁게</button>
+      </div>
+
+      <div class="checkboxes">
+        <label><input type="checkbox" id="showBase" checked> 기준 그래프 <strong>y = x²</strong> 함께 보기</label>
+        <label><input type="checkbox" id="showVertex" checked> 꼭짓점과 대칭축 표시</label>
+      </div>
+
+      <div class="equation">
+        <div class="main" id="equationText">y = x²</div>
+        <div class="sub">그래프 색: <strong style="color:var(--red)">빨강</strong>, 기준 그래프 y = x²: <strong style="color:var(--blue)">파랑</strong></div>
+      </div>
+
+      <div class="concept">
+        <h3>확인할 개념</h3>
+        <ul>
+          <li><strong>a</strong>가 바뀌면 그래프의 <strong>열리는 방향</strong>과 <strong>폭</strong>이 달라집니다.</li>
+          <li><strong>b</strong>가 바뀌면 그래프의 <strong>대칭축</strong>과 <strong>꼭짓점의 x좌표</strong>가 달라집니다.</li>
+          <li><strong>c</strong>가 바뀌면 그래프가 위아래로 움직이며 <strong>y절편</strong>이 달라집니다.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card graph-card">
+      <div class="graph-top">
+        <div>
+          <h2 style="margin:0;">그래프 보기</h2>
+          <div class="footer-note">좌표축 단위: x축 1칸 = 1, y축 1칸 = 1</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="swatch" style="background:var(--red)"></span><span>현재 그래프</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--blue)"></span><span>기준 그래프 y = x²</span></div>
+          <div class="legend-item"><span class="swatch" style="background:var(--green)"></span><span>대칭축 / 꼭짓점</span></div>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="graph"></canvas>
+      </div>
+
+      <div class="info">
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-title">꼭짓점</div>
+            <div class="info-value" id="vertexText">(0, 0)</div>
+          </div>
+          <div class="info-box">
+            <div class="info-title">대칭축</div>
+            <div class="info-value" id="axisText">x = 0</div>
+          </div>
+          <div class="info-box">
+            <div class="info-title">y절편</div>
+            <div class="info-value" id="yInterceptText">(0, 0)</div>
+          </div>
+          <div class="info-box">
+            <div class="info-title">판별식 D = b² - 4ac</div>
+            <div class="info-value" id="discriminantText">0</div>
+          </div>
+        </div>
+
+        <div class="concept" style="margin-top:14px; background:#f5fbf7; border-color:#ccefd8;">
+          <h3 style="color:#0f7a3f;">관찰 안내</h3>
+          <ul id="observationList">
+            <li>a가 0보다 크면 위로 열리고, 0보다 작으면 아래로 엽니다.</li>
+            <li>|a|가 클수록 그래프가 더 좁아집니다.</li>
+            <li>b와 c를 바꾸며 꼭짓점과 y절편이 어떻게 이동하는지 살펴보세요.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('graph');
+  const ctx = canvas.getContext('2d');
+
+  const aRange = document.getElementById('aRange');
+  const bRange = document.getElementById('bRange');
+  const cRange = document.getElementById('cRange');
+
+  const aValue = document.getElementById('aValue');
+  const bValue = document.getElementById('bValue');
+  const cValue = document.getElementById('cValue');
+
+  const equationText = document.getElementById('equationText');
+  const vertexText = document.getElementById('vertexText');
+  const axisText = document.getElementById('axisText');
+  const yInterceptText = document.getElementById('yInterceptText');
+  const discriminantText = document.getElementById('discriminantText');
+  const observationList = document.getElementById('observationList');
+
+  const showBase = document.getElementById('showBase');
+  const showVertex = document.getElementById('showVertex');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const xMin = -10, xMax = 10;
+  const yMin = -10, yMax = 10;
+
+  function fmt(n){
+    const rounded = Math.round(n * 100) / 100;
+    if (Math.abs(rounded) < 1e-10) return '0';
+    return rounded.toString();
+  }
+
+  function signedTerm(coef, variable, isFirst){
+    if (Math.abs(coef) < 1e-10) return isFirst ? '' : '';
+    const sign = coef >= 0 ? (isFirst ? '' : ' + ') : (isFirst ? '-' : ' - ');
+    const abs = Math.abs(coef);
+    let coeffText = '';
+    if (variable){
+      coeffText = abs === 1 ? '' : fmt(abs);
+      return sign + coeffText + variable;
+    }
+    return sign + fmt(abs);
+  }
+
+  function makeEquation(a,b,c){
+    let eq = 'y = ';
+    let parts = '';
+    parts += signedTerm(a,'x²',true);
+    parts += signedTerm(b,'x',parts === '');
+    parts += signedTerm(c,'',parts === '');
+    if (parts === '') parts = '0';
+    eq += parts.trim().replace(/^-\s/, '-');
+    return eq;
+  }
+
+  function resizeCanvas(){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw();
+  }
+
+  function xToPx(x){
+    const w = canvas.getBoundingClientRect().width;
+    return (x - xMin) / (xMax - xMin) * w;
+  }
+
+  function yToPx(y){
+    const h = canvas.getBoundingClientRect().height;
+    return h - (y - yMin) / (yMax - yMin) * h;
+  }
+
+  function pxToX(px){
+    const w = canvas.getBoundingClientRect().width;
+    return xMin + (px / w) * (xMax - xMin);
+  }
+
+  function drawGrid(){
+    const w = canvas.getBoundingClientRect().width;
+    const h = canvas.getBoundingClientRect().height;
+
+    ctx.clearRect(0,0,w,h);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,w,h);
+
+    // minor grid
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#edf2f7';
+    for(let x = Math.ceil(xMin); x <= Math.floor(xMax); x++){
+      const px = xToPx(x);
+      ctx.beginPath();
+      ctx.moveTo(px,0);
+      ctx.lineTo(px,h);
+      ctx.stroke();
+    }
+    for(let y = Math.ceil(yMin); y <= Math.floor(yMax); y++){
+      const py = yToPx(y);
+      ctx.beginPath();
+      ctx.moveTo(0,py);
+      ctx.lineTo(w,py);
+      ctx.stroke();
+    }
+
+    // axes
+    ctx.strokeStyle = '#55687e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0,yToPx(0));
+    ctx.lineTo(w,yToPx(0));
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(xToPx(0),0);
+    ctx.lineTo(xToPx(0),h);
+    ctx.stroke();
+
+    // ticks and labels
+    ctx.fillStyle = '#33485f';
+    ctx.font = '15px Arial, Malgun Gothic, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for(let x = Math.ceil(xMin); x <= Math.floor(xMax); x++){
+      const px = xToPx(x);
+      const py0 = yToPx(0);
+      ctx.beginPath();
+      ctx.moveTo(px, py0 - 5);
+      ctx.lineTo(px, py0 + 5);
+      ctx.strokeStyle = '#55687e';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      if(x !== 0){
+        ctx.fillText(String(x), px, py0 + 8);
+      }
+    }
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    for(let y = Math.ceil(yMin); y <= Math.floor(yMax); y++){
+      const py = yToPx(y);
+      const px0 = xToPx(0);
+      ctx.beginPath();
+      ctx.moveTo(px0 - 5, py);
+      ctx.lineTo(px0 + 5, py);
+      ctx.stroke();
+      if(y !== 0){
+        ctx.fillText(String(y), px0 + 8, py);
+      }
+    }
+
+    // axis labels
+    ctx.fillStyle = '#102033';
+    ctx.font = 'bold 18px Arial, Malgun Gothic, sans-serif';
+    ctx.fillText('y', xToPx(0)+12, 10);
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('x', w-10, yToPx(0)-10);
+  }
+
+  function drawFunction(fn, color, width=3){
+    const w = canvas.getBoundingClientRect().width;
+    ctx.beginPath();
+    let started = false;
+    for(let px = 0; px <= w; px += 1){
+      const x = pxToX(px);
+      const y = fn(x);
+      const py = yToPx(y);
+      if (!isFinite(py)) { started = false; continue; }
+
+      if (y < yMin - 1 || y > yMax + 1){
+        started = false;
+        continue;
+      }
+
+      if(!started){
+        ctx.moveTo(px, py);
+        started = true;
+      }else{
+        ctx.lineTo(px, py);
+      }
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  }
+
+  function drawPoint(x,y,color,label){
+    const px = xToPx(x), py = yToPx(y);
+    const w = canvas.getBoundingClientRect().width;
+    const h = canvas.getBoundingClientRect().height;
+    if(px < 0 || px > w || py < 0 || py > h) return;
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if(label){
+      ctx.fillStyle = color;
+      ctx.font = 'bold 16px Arial, Malgun Gothic, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(label, px + 10, py - 8);
+    }
+  }
+
+  function drawDashedVertical(x, color){
+    const px = xToPx(x);
+    const h = canvas.getBoundingClientRect().height;
+    ctx.save();
+    ctx.setLineDash([8,6]);
+    ctx.beginPath();
+    ctx.moveTo(px, 0);
+    ctx.lineTo(px, h);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function updateTexts(a,b,c){
+    aValue.textContent = fmt(a);
+    bValue.textContent = fmt(b);
+    cValue.textContent = fmt(c);
+
+    equationText.textContent = makeEquation(a,b,c);
+
+    const xv = -b/(2*a);
+    const yv = a*xv*xv + b*xv + c;
+    const D = b*b - 4*a*c;
+
+    vertexText.textContent = '(' + fmt(xv) + ', ' + fmt(yv) + ')';
+    axisText.textContent = 'x = ' + fmt(xv);
+    yInterceptText.textContent = '(0, ' + fmt(c) + ')';
+    discriminantText.textContent = fmt(D);
+
+    const openText = a > 0 ? '위로 엽니다.' : '아래로 엽니다.';
+    const widthText = Math.abs(a) > 1 ? '기준 그래프 y = x²보다 더 좁습니다.' :
+                      Math.abs(a) < 1 ? '기준 그래프 y = x²보다 더 넓습니다.' :
+                      '기준 그래프 y = x²와 폭이 같습니다.';
+    const bText = 'b가 바뀌면 대칭축은 x = -b / (2a) 에 따라 움직입니다.';
+    const cText = 'c는 y절편이므로 그래프가 (0, ' + fmt(c) + ')를 지납니다.';
+
+    observationList.innerHTML = '';
+    [ 'a = ' + fmt(a) + ' 이므로 그래프는 <strong>' + openText + '</strong>',
+      '|a| = ' + fmt(Math.abs(a)) + ' 이므로 <strong>' + widthText + '</strong>',
+      '<strong>' + bText + '</strong>',
+      '<strong>' + cText + '</strong>'
+    ].forEach(text=>{
+      const li = document.createElement('li');
+      li.innerHTML = text;
+      observationList.appendChild(li);
+    });
+  }
+
+  function draw(){
+    const a = parseFloat(aRange.value);
+    const b = parseFloat(bRange.value);
+    const c = parseFloat(cRange.value);
+
+    drawGrid();
+
+    if(showBase.checked){
+      drawFunction(x => x*x, '#1f78ff', 2.5);
+    }
+
+    drawFunction(x => a*x*x + b*x + c, '#e94b4b', 3.5);
+
+    if(showVertex.checked){
+      const xv = -b/(2*a);
+      const yv = a*xv*xv + b*xv + c;
+      drawDashedVertical(xv, '#18a558');
+      drawPoint(xv, yv, '#18a558', '꼭짓점');
+      drawPoint(0, c, '#ff9f1c', 'y절편');
+    }
+
+    updateTexts(a,b,c);
+  }
+
+  function setValues(a,b,c){
+    aRange.value = a;
+    bRange.value = b;
+    cRange.value = c;
+    draw();
+  }
+
+  [aRange,bRange,cRange,showBase,showVertex].forEach(el=>{
+    el.addEventListener('input', draw);
+    el.addEventListener('change', draw);
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    showBase.checked = true;
+    showVertex.checked = true;
+    setValues(1,0,0);
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      setValues(btn.dataset.a, btn.dataset.b, btn.dataset.c);
+    });
+  });
+
+  window.addEventListener('resize', resizeCanvas);
+
+  resizeCanvas();
+})();
+</script>
+</body>
+</html>
